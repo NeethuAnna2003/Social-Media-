@@ -1,0 +1,55 @@
+/* PostLocation.css */
+
+.post-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1));
+    border-radius: 20px;
+    width: fit-content;
+    font-size: 0.9rem;
+    color: #8b5cf6;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.post-location:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(168, 85, 247, 0.15));
+    transform: translateY(-1px);
+}
+
+.post-location.processing {
+    background: linear-gradient(135deg, rgba(156, 163, 175, 0.1), rgba(156, 163, 175, 0.15));
+    color: #6b7280;
+}
+
+.location-icon {
+    font-size: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.location-text {
+    letter-spacing: 0.3px;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .post-location {
+        font-size: 0.85rem;
+        padding: 5px 10px;
+    }
+}

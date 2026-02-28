@@ -1,0 +1,28 @@
+# =========================
+# ENV FILES
+# =========================
+.env
+*.env
+
+# =========================
+# NODE / REACT
+# =========================
+node_modules/
+frontend/node_modules/
+frontend/build/
+
+# =========================
+# PYTHON / DJANGO
+# =========================
+__pycache__/
+*.pyc
+venv/
+backend/venv/
+db.sqlite3
+staticfiles/
+
+# =========================
+# SYSTEM FILES
+# =========================
+.DS_Store
+Thumbs.db

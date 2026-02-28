@@ -1,0 +1,74 @@
+@startuml Admin Activity Flow
+!theme plain
+title Connectify AI — Admin Activity Flow
+
+actor Admin
+participant "Admin Dashboard" as UI
+participant "Admin API" as API
+database "DB" as DB
+participant "AI Services" as AI
+
+== Admin Login ==
+Admin -> UI: Open /admin
+UI -> API: POST /admin/login
+API -> DB: Validate admin user
+DB --> API: Admin record
+API --> UI: Admin session
+UI -> UI: Show dashboard
+
+== User Management ==
+Admin -> UI: Users list
+UI -> API: GET /admin/users/
+API -> DB: Fetch all users
+DB --> API: Users list
+API --> UI: Serialized users
+Admin -> UI: View/Edit/Ban user
+UI -> API: PATCH/DELETE /admin/users/{id}/
+API -> DB: Update/Delete user
+DB --> API: Result
+API --> UI: 200/204
+
+== Content Moderation ==
+Admin -> UI: Flagged posts/comments
+UI -> API: GET /admin/moderation/queue/
+API -> DB: Fetch flagged content
+DB --> API: Flagged items
+API --> UI: Queue
+Admin -> UI: Review item (approve/remove)
+UI -> API: POST /admin/moderation/{type}/{id}/action/
+API -> DB: Update status, delete if needed
+DB --> API: Result
+API --> UI: Confirmation
+
+== Video & Caption Management ==
+Admin -> UI: Video list
+UI -> API: GET /admin/videos/
+API -> DB: Fetch videos + captions
+DB --> API: Videos
+API --> UI: List
+Admin -> UI: View captions, re‑run AI
+UI -> API: POST /admin/videos/{id}/regenerate-captions/
+API -> AI: Trigger caption job
+AI -> AI: Generate captions
+AI -> DB: Save Caption rows
+API -> UI: Job status
+
+== System Health & Logs ==
+Admin -> UI: System health page
+UI -> API: GET /admin/health/
+API -> DB: Check DB connections, job queues
+API --> UI: Health summary
+Admin -> UI: View logs
+UI -> API: GET /admin/logs/
+API -> DB: Query audit logs
+DB --> API: Logs
+API --> UI: Paginated logs
+
+== Analytics Dashboard ==
+Admin -> UI: Analytics
+UI -> API: GET /admin/analytics/
+API -> DB: Aggregates (users, posts, likes, comments)
+DB --> API: Metrics
+API --> UI: Charts/tables
+
+@enduml

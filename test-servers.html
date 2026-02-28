@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connectify AI - Server Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .test-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .status.pending {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .status.success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status.error {
+            background: #dc3545;
+            color: white;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .success-message {
+            color: #28a745;
+        }
+        
+        .error-message {
+            color: #dc3545;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .info strong {
+            color: #1976d2;
+        }
+        
+        a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Connectify AI</h1>
+        <p class="subtitle">Server Connection Test</p>
+        
+        <div class="info">
+            <strong>✅ Issues Fixed:</strong><br>
+            • Vite proxy now points to correct port (8000)<br>
+            • Added 10-second timeout to prevent hanging<br>
+            • Implemented fallback for offline mode<br>
+            • Enhanced error handling and logging
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">Backend Server (Port 8000)</div>
+            <div id="backend-status" class="status pending">Testing...</div>
+            <button onclick="testBackend()">Test Backend</button>
+            <div id="backend-result" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">Frontend Server (Port 5173)</div>
+            <div id="frontend-status" class="status pending">Testing...</div>
+            <button onclick="testFrontend()">Test Frontend</button>
+            <div id="frontend-result" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">API Proxy Test</div>
+            <div id="proxy-status" class="status pending">Not tested</div>
+            <button onclick="testProxy()">Test Proxy</button>
+            <div id="proxy-result" class="result" style="display:none;"></div>
+        </div>
+        
+        <div style="margin-top: 30px; text-align: center;">
+            <button onclick="window.location.href='http://localhost:5173'" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                Open Application →
+            </button>
+        </div>
+        
+        <div class="info" style="margin-top: 20px;">
+            <strong>📝 Next Steps:</strong><br>
+            1. Ensure both servers show "Success" status<br>
+            2. Click "Open Application" to launch Connectify AI<br>
+            3. Check browser console (F12) for detailed logs
+        </div>
+    </div>
+    
+    <script>
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testBackend, 500);
+            setTimeout(testFrontend, 1000);
+        });
+        
+        async function testBackend() {
+            const statusEl = document.getElementById('backend-status');
+            const resultEl = document.getElementById('backend-result');
+            
+            statusEl.className = 'status pending';
+            statusEl.textContent = 'Testing...';
+            resultEl.style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/health/', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    statusEl.className = 'status success';
+                    statusEl.textContent = '✅ Connected';
+                    resultEl.innerHTML = `<span class="success-message">Backend is running!<br>Response: ${JSON.stringify(data, null, 2)}</span>`;
+                    resultEl.style.display = 'block';
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ Failed';
+                resultEl.innerHTML = `<span class="error-message">Error: ${error.message}<br><br>Make sure backend is running:<br>cd backend<br>python manage.py runserver</span>`;
+                resultEl.style.display = 'block';
+            }
+        }
+        
+        async function testFrontend() {
+            const statusEl = document.getElementById('frontend-status');
+            const resultEl = document.getElementById('frontend-result');
+            
+            statusEl.className = 'status pending';
+            statusEl.textContent = 'Testing...';
+            resultEl.style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:5173/', {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    statusEl.className = 'status success';
+                    statusEl.textContent = '✅ Connected';
+                    resultEl.innerHTML = `<span class="success-message">Frontend is running!<br>Vite dev server is active on port 5173</span>`;
+                    resultEl.style.display = 'block';
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ Failed';
+                resultEl.innerHTML = `<span class="error-message">Error: ${error.message}<br><br>Make sure frontend is running:<br>cd frontend<br>npm run dev</span>`;
+                resultEl.style.display = 'block';
+            }
+        }
+        
+        async function testProxy() {
+            const statusEl = document.getElementById('proxy-status');
+            const resultEl = document.getElementById('proxy-result');
+            
+            statusEl.className = 'status pending';
+            statusEl.textContent = 'Testing...';
+            resultEl.style.display = 'none';
+            
+            try {
+                // This tests if the Vite proxy is correctly forwarding /api requests
+                const response = await fetch('http://localhost:5173/api/health/', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    statusEl.className = 'status success';
+                    statusEl.textContent = '✅ Working';
+                    resultEl.innerHTML = `<span class="success-message">Proxy is correctly forwarding to backend!<br>Response: ${JSON.stringify(data, null, 2)}</span>`;
+                    resultEl.style.display = 'block';
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ Failed';
+                resultEl.innerHTML = `<span class="error-message">Proxy Error: ${error.message}<br><br>The Vite proxy might not be configured correctly or frontend server is not running.</span>`;
+                resultEl.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

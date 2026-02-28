@@ -1,0 +1,42 @@
+# ✅ NEWS & NOTIFICATIONS - RECTIFIED
+
+## 🎯 What I Fixed:
+
+### 1. WebSocket Connection Failed 🔴 -> 🟢
+**Problem**: `WebSocket connection to 'ws://localhost:8000/ws/notifications/2/' failed`
+**Root Cause**: The WebSocket connection was missing the Authentication Token. The backend rejected anonymous connections.
+**Fix**: Updated `NotificationContext.jsx` to append the access token to the connection URL:
+```javascript
+// BEFORE
+new WebSocket(`.../notifications/${user.id}/`)
+
+// AFTER
+const token = localStorage.getItem('access');
+new WebSocket(`.../notifications/${user.id}/?token=${token}`)
+```
+✅ Real-time notifications should now connect successfully!
+
+### 2. Favicon 404 Errors 🖼️
+**Problem**: `GET https://t3.gstatic.com/faviconV2... 404`
+**Root Cause**: Some news domains (e.g., Bank of America) don't have favicons on Google's service.
+**Fix**: Updated `NewsCard.jsx` to gracefully handle these errors:
+- Instead of just breaking or hiding, it now falls back to a **Generic News Icon**.
+- UI will look clean even if the source logo is missing.
+
+---
+
+## 🚀 TO VERIFY FIXES:
+
+### 1. Hard Refresh (Ctrl + Shift + R)
+This ensures the new code for `NotificationContext` and `NewsCard` is loaded.
+
+### 2. Check Console
+- **Notification Socket**: correctly connecting?
+  - Look for: `NotificationSocket: Connected`
+- **News Cards**: checking fallback?
+  - If a favicon fails, you should see a generic gray newspaper icon instead of a broken image.
+
+---
+
+**Status**: 🟢 RECTIFIED
+**Last Updated**: 2026-01-16 20:16 IST

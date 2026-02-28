@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connectify API</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .api-section {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .endpoint {
+            background-color: white;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+        }
+        .method {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+        .get { background-color: #e3f2fd; color: #1976d2; }
+        .post { background-color: #e8f5e9; color: #388e3c; }
+        .put { background-color: #fff3e0; color: #f57c00; }
+        .delete { background-color: #ffebee; color: #d32f2f; }
+        .url {
+            font-family: 'Courier New', Courier, monospace;
+            color: #2c3e50;
+        }
+        .description {
+            margin: 5px 0 0 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to Connectify API</h1>
+        <p>A social networking platform with AI-powered features</p>
+    </div>
+
+    <div class="api-section">
+        <h2>API Endpoints</h2>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="url">/api/health/</span>
+            <div class="description">Check API health status</div>
+        </div>
+        
+        <h3>Authentication</h3>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="url">/api/token/</span>
+            <div class="description">Obtain JWT token (login)</div>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="url">/api/token/refresh/</span>
+            <div class="description">Refresh JWT token</div>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="url">/api/token/verify/</span>
+            <div class="description">Verify JWT token</div>
+        </div>
+        
+        <h3>User Accounts</h3>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="url">/api/accounts/register/</span>
+            <div class="description">Register a new user</div>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="method put">PUT</span>
+            <span class="url">/api/accounts/profile/</span>
+            <div class="description">Get or update user profile (authenticated)</div>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="url">/api/accounts/profile/&lt;username&gt;/</span>
+            <div class="description">Get public profile</div>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="url">/api/accounts/follow/&lt;username&gt;/</span>
+            <div class="description">Follow a user</div>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="url">/api/accounts/unfollow/&lt;username&gt;/</span>
+            <div class="description">Unfollow a user</div>
+        </div>
+        
+        <h3>Admin</h3>
+        <div class="endpoint">
+            <a href="/admin/" class="method" style="text-decoration: none;">ADMIN</a>
+            <span class="url">/admin/</span>
+            <div class="description">Admin interface</div>
+        </div>
+    </div>
+    
+    <footer style="margin-top: 40px; text-align: center; color: #7f8c8d; font-size: 0.9em;">
+        <p>Connectify API v1.0.0</p>
+    </footer>
+</body>
+</html>

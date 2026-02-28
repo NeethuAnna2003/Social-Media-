@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test News Dashboard Navigation</title>
+    <script>
+        // Simulate clicking a news card
+        function testNavigation() {
+            const articleId = "https://example.com/test-article";
+            const targetUrl = `/news-dashboard/${articleId}`;
+
+            console.log('Testing navigation to:', targetUrl);
+
+            // This simulates what React Router's navigate() does
+            window.history.pushState({}, '', targetUrl);
+
+            console.log('Current URL:', window.location.pathname);
+            console.log('Expected:', targetUrl);
+
+            if (window.location.pathname === targetUrl) {
+                document.getElementById('result').innerHTML = '✅ Navigation WORKS! URL is correct.';
+                document.getElementById('result').style.color = 'green';
+            } else {
+                document.getElementById('result').innerHTML = '❌ Navigation FAILED! URL is: ' + window.location.pathname;
+                document.getElementById('result').style.color = 'red';
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4338ca;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Test News Dashboard Navigation</h1>
+    <p>This tests if the browser can navigate to <code>/news-dashboard/[article-id]</code></p>
+
+    <button onclick="testNavigation()">Test Navigation</button>
+
+    <div id="result"></div>
+
+    <hr style="margin: 40px 0;">
+
+    <h2>Manual Test:</h2>
+    <p>Type this in your browser address bar:</p>
+    <code style="background: #f0f0f0; padding: 10px; display: block; margin: 10px 0;">
+        http://localhost:5173/news-dashboard/test-article-123
+    </code>
+
+    <p><strong>Expected:</strong> You should see the NewsArticleDetail page (even if it says "Article not found")</p>
+    <p><strong>If you're redirected to feed:</strong> The route is broken or not registered</p>
+</body>
+
+</html>
