@@ -11,8 +11,8 @@ from PIL import Image
 from huggingface_hub import InferenceClient
 from transformers import BlipProcessor, BlipForConditionalGeneration
 
-# Explicitly use the key provided by user (Kept for reference or future API usage if needed, but unused for now)
-HF_API_KEY = "".strip()
+# Read key from environment (avoid hardcoding secrets in source control)
+HF_API_KEY = os.getenv("HF_API_KEY", "").strip()
 
 # NOTE: InferenceClient removed. All AI is now LOCAL.
 
