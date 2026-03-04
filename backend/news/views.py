@@ -33,7 +33,8 @@ from django.conf import settings
 
 def classify_comment_with_ai(content):
     # Quick implementation of Gemini call for classification
-    API_KEY = getattr(settings, 'GEMINI_API_KEY', "AIzaSyB1Cdp1owBxfOUZWcTXXJZhypFWZQyQmGk")
+    import os
+    API_KEY = getattr(settings, 'GEMINI_API_KEY', None) or os.environ.get('GEMINI_API_KEY', '')
     URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
     
     prompt = f"""

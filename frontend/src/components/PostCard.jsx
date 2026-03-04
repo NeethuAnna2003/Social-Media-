@@ -245,8 +245,8 @@ const PostCard = ({ post, onLike, onDelete, onEdit, currentUserId }) => {
         if (!comments.length) return 0;
         return comments.filter(comment => {
             const isCommentAuthor = currentUserId && (comment.user?.id === currentUserId || comment.user?._id === currentUserId);
-            const isHateComment = comment.sentiment === 'negative' || comment.toxicity === 'high';
-            return !isHateComment || isCommentAuthor || isOwnPost;
+            const isHateComment = comment.sentiment === 'negative' || comment.toxicity === 'high' || comment.is_filtered;
+            return !isHateComment || isCommentAuthor;
         }).length;
     };
 
@@ -527,10 +527,10 @@ const PostCard = ({ post, onLike, onDelete, onEdit, currentUserId }) => {
                                             String(comment.user?._id) === String(currentUserId)
                                         );
 
-                                        const isHateComment = comment.sentiment === 'negative' || comment.toxicity === 'high';
+                                        const isHateComment = comment.sentiment === 'negative' || comment.toxicity === 'high' || comment.is_filtered;
 
                                         // VISIBILITY LOGIC REMAINS STRICT
-                                        const canSeeComment = !isHateComment || isCommentAuthor || isOwnPost;
+                                        const canSeeComment = !isHateComment || isCommentAuthor;
                                         if (!canSeeComment) return null;
 
                                         const showHateWarning = isHateComment && isCommentAuthor;

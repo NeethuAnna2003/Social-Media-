@@ -191,7 +191,8 @@ import time
 from .models import AISummaryCache, AIDiscussionCache
 
 # Gemini API Configuration
-GEMINI_API_KEY = getattr(settings, 'GEMINI_API_KEY', "AIzaSyB1Cdp1owBxfOUZWcTXXJZhypFWZQyQmGk")
+import os
+GEMINI_API_KEY = getattr(settings, 'GEMINI_API_KEY', None) or os.environ.get('GEMINI_API_KEY', '')
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 
 import sys

@@ -10,9 +10,7 @@ import torch
 from PIL import Image
 from huggingface_hub import InferenceClient
 from transformers import BlipProcessor, BlipForConditionalGeneration
-
-# Read key from environment (avoid hardcoding secrets in source control)
-HF_API_KEY = os.getenv("HF_API_KEY", "").strip()
+import google.generativeai as genai
 
 # NOTE: InferenceClient removed. All AI is now LOCAL.
 
@@ -222,6 +220,253 @@ def analyze_comment_logic(text):
         "reason": f"Contains forbidden content: {', '.join(found_flags[:3])}" if found_flags else ""
     }
 
+def analyze_comment_semantic_logic(text, keyword_flagged=False):
+    """
+    Advanced semantic analysis and contextual understanding of a comment.
+    Returns JSON strictly following the new AI Moderation Engine guidelines.
+    """
+    api_key = None
+    try:
+        from django.conf import settings
+        api_key = getattr(settings, 'GEMINI_API_KEY', None)
+    except Exception:
+        pass
+
+    if not api_key:
+        api_key = os.environ.get('GEMINI_API_KEY')
+
+    if not api_key:
+        return _fallback_semantic_analysis(text, keyword_flagged)
+
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        
+        prompt = f"""You are an advanced AI moderation engine for a social media platform.
+The platform already uses a keyword filtering system.
+Your job is to perform semantic analysis and contextual understanding of the following comment.
+
+Instructions:
+1. Analyze the meaning, intent, tone, and context.
+2. Detect disguised abuse, indirect threats, sarcasm, or coded language.
+3. Consider multilingual content (English, Hindi, Malayalam, Manglish).
+4. Consider whether the comment is attacking a person, group, or community.
+5. Distinguish between friendly banter and real harassment.
+
+Comment: "{text}"
+Keyword Filter Flagged: {str(keyword_flagged).lower()}
+
+Return JSON ONLY in this exact structure, with no markdown code blocks around it:
+{{
+  "semantic_toxicity_score": <float 0-1>,
+  "intent": "<neutral|criticism|insult|harassment|threat|hate|sexual|self-harm|spam>",
+  "severity_level": "<low|medium|high|critical>",
+  "recommended_action": "<VISIBLE|REVIEW|HIDDEN>",
+  "confidence": <float 0-1>,
+  "explanation": "<Short clear explanation>"
+}}
+
+Decision Guidelines:
+- If severity is critical -> HIDDEN
+- If high -> HIDDEN
+- If medium -> REVIEW
+- If low -> REVIEW if keyword_flagged = true, otherwise VISIBLE
+- If neutral -> VISIBLE
+"""
+        response = model.generate_content(prompt)
+        response_text = response.text.strip()
+        
+        # Clean markdown if present
+        if "```json" in response_text:
+            response_text = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            response_text = response_text.split("```")[1].split("```")[0].strip()
+            
+        return json.loads(response_text)
+    except Exception as e:
+        print(f"Semantic analysis error: {e}")
+        return _fallback_semantic_analysis(text, keyword_flagged)
+
+def _fallback_semantic_analysis(text, keyword_flagged=False):
+    """Fallback logic when Gemini API is unavailable or fails."""
+    clean_text = text.lower()
+    
+    score = 0.0
+    intent = "neutral"
+    severity = "low"
+    
+    # Simple keyword-based rules for fallback
+    threat_patterns = ["kill", "murder", "won't be so lucky", "won't be lucky", "disappear"]
+    spam_patterns = ["buy followers", "cheap price", "dm now"]
+    insult_patterns = ["idiot", "stupid", "dumb", "ugly"]
+    harassment_patterns = ["hate you", "loser", "trash"]
+    
+    if any(p in clean_text for p in threat_patterns):
+        score = 0.95
+        intent = "threat"
+        severity = "critical"
+    elif any(p in clean_text for p in harassment_patterns):
+        score = 0.85
+        intent = "harassment"
+        severity = "high"
+    elif any(p in clean_text for p in spam_patterns):
+        score = 0.50
+        intent = "spam"
+        severity = "medium"
+    elif any(p in clean_text for p in insult_patterns):
+        score = 0.40
+        intent = "insult"
+        severity = "low"
+    elif keyword_flagged:
+        score = 0.30
+        intent = "criticism"
+        severity = "low"
+    else:
+        # Check if it was neutral / positive
+        pass
+
+    action = "VISIBLE"
+    if severity == "critical" or severity == "high":
+        action = "HIDDEN"
+    elif severity == "medium":
+        action = "REVIEW"
+    elif severity == "low" and keyword_flagged:
+        action = "REVIEW"
+
+    return {
+        "semantic_toxicity_score": score,
+        "intent": intent,
+        "severity_level": severity,
+        "recommended_action": action,
+        "confidence": 0.8,
+        "explanation": "Fallback analysis applied."
+    }
+
+def analyze_word_filter_request(words_text, reason):
+    """
+    AI Moderation to automatically approve or reject a user's word filter request.
+    Decides based on whether the words are normal slurs, offensive words, or spam vs 
+    if they are common functional words (like "the", "and", "is") which shouldn't be filtered.
+    Returns: JSON {"action": "approve" | "reject", "reason": "Explanation"}
+    """
+    api_key = None
+    try:
+        from django.conf import settings
+        api_key = getattr(settings, 'GEMINI_API_KEY', None)
+    except Exception:
+        pass
+
+    if not api_key:
+        api_key = os.environ.get('GEMINI_API_KEY')
+
+    if not api_key:
+        # Fallback mechanism
+        common_words = {"the", "and", "is", "of", "to", "in", "it", "with", "for", "on", "that", "this", "my", "are"}
+        words_list = [w.strip().lower() for w in words_text.split(',')]
+        
+        # If any user-requested word is a highly common generic word, reject it
+        for w in words_list:
+            if w in common_words:
+                return {
+                    "action": "reject",
+                    "reason": f"Cannot filter common functional word: '{w}'"
+                }
+        
+        return {
+            "action": "approve",
+            "reason": "Word(s) seem acceptable for custom filtering."
+        }
+        
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        
+        prompt = f"""You are an AI content moderation system.
+In admin page
+Your task is to analyze a user comment and decide whether it should be APPROVED or REJECTED.
+
+In admin page , Approve comments that contain:
+- Hate speech
+- Personal attacks or insults
+- Harassment or bullying
+- Profanity or abusive language
+- Sexual or explicit content
+- Threats or violence
+- Spam or promotional links
+
+Reject comments that are:
+- Respectful
+- Neutral discussions
+- Constructive criticism
+- Normal conversation
+
+Here Approve means , it should not be visible to public , it should be hidden that words .
+
+Return the response ONLY in this JSON format:
+
+{{
+ "decision": "APPROVE or REJECT",
+ "reason": "Short explanation"
+}}
+
+Comment: "{words_text}"
+
+✅ Example Responses
+Input
+"You are stupid and useless"
+
+Output
+{{
+ "decision": "APPROVE",
+ "reason": "Contains personal insult"
+}}
+Input
+"I think the article could include more examples."
+
+Output
+{{
+ "decision": "REJECT",
+ "reason": "Constructive feedback"
+}}
+"""
+        response = model.generate_content(prompt)
+        response_text = response.text.strip()
+        
+        if "```json" in response_text:
+            response_text = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            response_text = response_text.split("```")[1].split("```")[0].strip()
+            
+        data = json.loads(response_text)
+        
+        # Map "decision" to "action"
+        action = data.get("decision", "REJECT").lower()
+        if action not in ["approve", "reject"]:
+            action = "reject"
+            
+        return {
+            "action": action,
+            "reason": data.get("reason", "No reason provided")
+        }
+    except Exception as e:
+        print(f"Word Filter AI Error: {e}")
+        # Smart Fallback Mechanism for when API key is leaked / expired
+        words_lower = words_text.lower()
+        bad_words_list = ["stupid", "useless", "dirty", "hate", "abuse", "kill", "murder", "ugly", "fat", "dumb", "trash", "filth", "nasty", "violent", "attack", "racist", "sexist", "spam"]
+        
+        is_bad = any(bw in words_lower for bw in bad_words_list)
+        
+        if is_bad:
+            return {
+                "action": "approve",
+                "reason": "Contains inappropriate or explicit content (Fallback)"
+            }
+        else:
+            return {
+                "action": "reject",
+                "reason": "Constructive or normal conversation (Fallback)"
+            }
+
 def generate_caption_logic(image_file=None, context=""):
     """
     Generates caption using local Salesforce/blip-image-captioning-base model.
@@ -335,7 +580,9 @@ def fetch_trending_news_logic(topic="technology", search_query=None, interests=N
     Fetches news using NewsAPI.ai (Event Registry) via POST.
     Supports: Topic Category, Keyword Search, Personal Interests.
     """
-    API_KEY = "eee0368e-febc-47c7-a867-7a22417e2414"
+    from django.conf import settings
+    import os
+    API_KEY = getattr(settings, 'NEWS_API_KEY', None) or os.environ.get('NEWS_API_KEY', '')
     URL = "https://newsapi.ai/api/v1/article/getArticles"
     
     # Base Query structure (always filter for English)

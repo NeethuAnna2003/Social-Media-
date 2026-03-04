@@ -395,31 +395,60 @@ class CommentListCreateView(generics.ListCreateAPIView):
                  from rest_framework.exceptions import PermissionDenied
                  raise PermissionDenied("Only the post owner can reply to comments.")
 
-        # AI Analysis
+        # --- NEW AI MODERATION ENGINE & KEYWORD FILTER ---
+        keyword_flagged = False
+        matched_words = []
+        is_filtered = False
+        
+        # 1. Keyword Filter System
+        if self.request.user.id != post.user.id:
+            try:
+                from .filter_service import CommentFilterService
+                service = CommentFilterService()
+                is_filtered, matched_words = service.check_comment(text, post.user.id)
+                keyword_flagged = is_filtered
+            except Exception as e:
+                print(f"Comment keyword filtering error: {e}")
+                
+        # 2. Semantic Analysis & Contextual Understanding
         sentiment = 'neutral'
         toxicity = 'none'
         confidence = 0.0
         reason = ''
         is_flagged = False
         
+        recommended_action = 'VISIBLE'
+        semantic_score = 0.0
+        
         try:
-            from ai_service.utils import analyze_comment_logic
+            from ai_service.utils import analyze_comment_semantic_logic
             
-            analysis = analyze_comment_logic(text)
+            analysis = analyze_comment_semantic_logic(text, keyword_flagged=keyword_flagged)
             
-            sentiment = analysis.get('sentiment', 'neutral')
-            toxicity = analysis.get('toxicity', 'none')
+            semantic_score = analysis.get('semantic_toxicity_score', 0.0)
+            intent = analysis.get('intent', 'neutral')
+            severity = analysis.get('severity_level', 'low')
+            recommended_action = analysis.get('recommended_action', 'VISIBLE')
             confidence = analysis.get('confidence', 0.0)
-            reason = analysis.get('reason', '')
+            reason = analysis.get('explanation', '')
             
-            # Decision Logic: Flag if High Toxicity
-            if toxicity == 'high':
+            if recommended_action in ['HIDDEN', 'REVIEW']:
                 is_flagged = True
+                toxicity = severity
+            else:
+                toxicity = 'none'
+
+            if intent in ['insult', 'hate', 'harassment', 'threat']:
+                sentiment = 'negative'
+            elif intent == 'spam':
+                sentiment = 'neutral'
+            else:
+                sentiment = 'neutral'
                 
         except Exception as e:
-            print(f"AI Analysis Failed: {e}")
+            print(f"AI Semantic Analysis Failed: {e}")
         
-        # Save the comment first
+        # Save the comment
         comment = serializer.save(
             user=self.request.user, 
             post=post, 
@@ -430,31 +459,23 @@ class CommentListCreateView(generics.ListCreateAPIView):
             is_flagged=is_flagged
         )
         
-        # --- COMMENT WORD FILTER ---
-        # Check if comment contains prohibited words for the post owner
-        try:
-            from .filter_service import CommentFilterService
-            from .filter_models import FilteredComment
-            
-            # Only filter if commenter is not the post owner
-            if self.request.user.id != post.user.id:
-                service = CommentFilterService()
-                is_filtered, matched_words = service.check_comment(text, post.user.id)
-                
-                if is_filtered:
-                    # Create FilteredComment record
+        # Apply final action mappings
+        if recommended_action in ['HIDDEN', 'REVIEW'] or keyword_flagged:
+            try:
+                from .filter_models import FilteredComment
+                if self.request.user.id != post.user.id:
+                    matched_info = matched_words if keyword_flagged else [f"AI flag: {intent}"]
                     FilteredComment.objects.create(
                         comment=comment,
                         post_owner=post.user,
                         commenter=self.request.user,
-                        matched_words=matched_words,
-                        is_visible_to_owner=False,  # Hidden from post owner
-                        is_visible_to_public=True,   # Visible to other users
-                        is_visible_to_commenter=True # Visible to commenter with warning
+                        matched_words=matched_info,
+                        is_visible_to_owner=(recommended_action != 'HIDDEN'),
+                        is_visible_to_public=(recommended_action == 'VISIBLE'),
+                        is_visible_to_commenter=True
                     )
-                    print(f"Comment {comment.id} filtered. Matched words: {matched_words}")
-        except Exception as e:
-            print(f"Comment filtering error: {e}")
+            except Exception as e:
+                print(f"Final Action filtering error: {e}")
         
         # Real-time Comment Update
         if not is_flagged:

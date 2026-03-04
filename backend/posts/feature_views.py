@@ -127,6 +127,34 @@ class ProhibitedWordRequestListCreateView(generics.ListCreateAPIView):
             reason=serializer.validated_data.get('reason', '')
         )
         
+        # --- NEW AI MODERATION ENGINE ---
+        try:
+            from ai_service.utils import analyze_word_filter_request
+            from accounts.models import CustomUser
+            
+            # Use string representation of words
+            words_text = ', '.join(serializer.validated_data['words'])
+            reason = serializer.validated_data.get('reason', '')
+            
+            ai_decision = analyze_word_filter_request(words_text, reason)
+            action = ai_decision.get('action')
+            ai_reason = f"[{'Approved' if action == 'approve' else 'Rejected'} by AI] {ai_decision.get('reason', '')}"
+            
+            # Find an admin user to act as the reviewer
+            admin_user = CustomUser.objects.filter(is_superuser=True).first()
+            admin_id = admin_user.id if admin_user else request.user.id
+            
+            if action == 'approve':
+                service.approve_request(word_request.id, admin_id, admin_notes=ai_reason)
+            elif action == 'reject':
+                service.reject_request(word_request.id, admin_id, admin_notes=ai_reason)
+                
+            # Refresh word_request to get updated status
+            word_request.refresh_from_db()
+                
+        except Exception as e:
+            print(f"Auto-moderation of word request failed: {e}")
+        
         # Return the created request
         response_serializer = ProhibitedWordRequestSerializer(word_request)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
