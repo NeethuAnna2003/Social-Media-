@@ -42,7 +42,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key-for-dev-only')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', ['testserver', 'localhost', '127.0.0.1'])
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', ['testserver', 'localhost', '127.0.0.1']) + [
+    "social-media-2-4cmg.onrender.com",
+    ".onrender.com"
+]
 
 CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', []) + [
     "https://social-media-orpin-one.vercel.app",
