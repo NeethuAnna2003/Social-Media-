@@ -1,31 +1,15 @@
 Django==5.2.9
-djangorestframework==3.16.1
-djangorestframework-simplejwt==5.5.1
-django-cors-headers==4.9.0
-django-apscheduler==0.7.0
-python-dotenv==1.2.1
+djangorestframework
+django-cors-headers
+channels
+django-apscheduler
 
-# ASGI / realtime
-channels==4.3.2
-channels-redis==4.2.0
-daphne==4.2.1
-whitenoise==6.8.2
+dj-database-url
+psycopg2-binary
+python-dotenv
+whitenoise
 
-# Background jobs
-celery==5.6.2
-redis==7.1.0
-
-# Database
-psycopg2-binary==2.9.9
-dj-database-url==2.3.0
-
-# API integrations and scraping used by app modules
-requests==2.32.5
-beautifulsoup4==4.14.3
-Pillow==11.3.0
-assemblyai==0.48.4
-
-# Optional heavier AI/media dependencies used in some video workflows
-ffmpeg-python==0.2.0
-moviepy==2.2.1
-openai-whisper==20250625
+gunicorn
+daphne
+channels-redis
+openai-whisper
