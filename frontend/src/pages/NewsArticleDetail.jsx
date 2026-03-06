@@ -10,6 +10,7 @@ import Layout from '../components/layout/Layout';
 import VoiceReader from '../components/VoiceReader';
 import NewsSummarizer from '../components/NewsSummarizer';
 import NewsDiscussion from '../components/NewsDiscussion';
+import { API_URL } from '../config/env';
 
 /**
  * News Article Detail Page
@@ -72,7 +73,7 @@ const NewsArticleDetail = () => {
         try {
             // Fetch full article content from backend scraper
             // No auth required - endpoint is public
-            const res = await fetch(`http://localhost:8000/api/news/fetch-content/?url=${encodeURIComponent(url)}`, {
+            const res = await fetch(`${API_URL}/news/fetch-content/?url=${encodeURIComponent(url)}`, {
                 headers: {
                     'Content-Type': 'application/json'
                 }

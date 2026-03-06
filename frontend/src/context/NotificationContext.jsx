@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import api from '../api/axios'; // Ensure we use the configured axios instance
 import Toast from '../components/Toast';
+import { WS_BASE } from '../config/env';
 
 const NotificationContext = createContext();
 
@@ -46,8 +47,7 @@ export const NotificationProvider = ({ children }) => {
 
         // Connect to Notification WebSocket with Auth Token
         const token = localStorage.getItem('access');
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const socket = new WebSocket(`${wsProtocol}//localhost:8000/ws/notifications/${user.id}/?token=${token}`);
+        const socket = new WebSocket(`${WS_BASE}/ws/notifications/${user.id}/?token=${token}`);
 
         socket.onopen = () => {
             console.log("NotificationSocket: Connected");

@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import StoryViewer from '../components/stories/StoryViewer';
+import { WS_BASE } from '../config/env';
 
 const Messages = () => {
     const { threadId } = useParams();
@@ -132,12 +133,8 @@ const Messages = () => {
             if (cancelled) return;
 
             // Connect new socket with JWT in query string (JwtAuthMiddleware expects ?token=)
-            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            // Backend WS port (align with API on 8001)
-            const host = window.location.hostname;
-            const backendWsPort = 8001;
             const tokenQS = token ? `?token=${encodeURIComponent(token)}` : '';
-            const socket = new WebSocket(`${wsProtocol}//${host}:${backendWsPort}/ws/chat/${activeThread.id}/${tokenQS}`.replace('/?', '?'));
+            const socket = new WebSocket(`${WS_BASE}/ws/chat/${activeThread.id}/${tokenQS}`.replace('/?', '?'));
 
             socket.onopen = () => {
                 console.log('WebSocket Connected');
