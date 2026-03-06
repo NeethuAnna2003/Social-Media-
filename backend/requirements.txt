@@ -6,7 +6,7 @@ channels
 django-apscheduler
 
 dj-database-url
-psycopg2-binary
+psycopg[binary]
 python-dotenv
 whitenoise
 requests
