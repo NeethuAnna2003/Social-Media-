@@ -10,7 +10,11 @@ from typing import Dict
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models.fields.files import FieldFile
 from django.conf import settings
-import google.generativeai as genai
+
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
 
 
 class ImageLocationService:
@@ -22,9 +26,12 @@ class ImageLocationService:
     def __init__(self):
         """Initialize the service with API credentials."""
         self.api_key = getattr(settings, 'GEMINI_API_KEY', None)
-        if self.api_key:
+        if self.api_key and genai is not None:
             genai.configure(api_key=self.api_key)
             self.model = genai.GenerativeModel('gemini-1.5-flash')
+        elif self.api_key and genai is None:
+            self.model = None
+            print("Warning: google-generativeai package not installed. Location detection will not work.")
         else:
             self.model = None
             print("Warning: GEMINI_API_KEY not found. Location detection will not work.")

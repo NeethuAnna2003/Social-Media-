@@ -9,17 +9,37 @@ from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
 from django.core.files.base import ContentFile
-from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter
-import cv2
-import numpy as np
 from pathlib import Path
 import logging
+
+# Optional heavy dependencies — import gracefully so startup doesn't crash
+try:
+    from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+    Image = ImageDraw = ImageFont = ImageEnhance = ImageFilter = None
+
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    cv2 = None
+    CV2_AVAILABLE = False
+
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    np = None
+    NUMPY_AVAILABLE = False
 
 from .models import Video, Caption, CaptionProcessingJob, ThumbnailOption
 from .services import UnifiedCaptionService
 from .audio_processor import AudioProcessor, AudioProcessingError
 
 logger = logging.getLogger(__name__)
+
 
 
 @shared_task(bind=True, max_retries=3)

@@ -2,15 +2,13 @@ import re
 import random
 import json
 import requests
-import numpy as np
 import os
-import time
 import io
-import torch
-from PIL import Image
-from huggingface_hub import InferenceClient
-from transformers import BlipProcessor, BlipForConditionalGeneration
-import google.generativeai as genai
+
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
 
 # NOTE: InferenceClient removed. All AI is now LOCAL.
 
@@ -30,6 +28,8 @@ def load_blip_model():
 
     print("Loading local BLIP model... (this may take a moment)")
     try:
+        from transformers import BlipProcessor, BlipForConditionalGeneration
+
         processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
         model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
         print("BLIP model loaded successfully.")
@@ -238,6 +238,9 @@ def analyze_comment_semantic_logic(text, keyword_flagged=False):
     if not api_key:
         return _fallback_semantic_analysis(text, keyword_flagged)
 
+    if genai is None:
+        return _fallback_semantic_analysis(text, keyword_flagged)
+
     try:
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-2.0-flash')
@@ -376,6 +379,12 @@ def analyze_word_filter_request(words_text, reason):
             "action": "approve",
             "reason": "Word(s) seem acceptable for custom filtering."
         }
+
+    if genai is None:
+        return {
+            "action": "reject",
+            "reason": "AI moderation service unavailable (google-generativeai not installed)."
+        }
         
     try:
         genai.configure(api_key=api_key)
@@ -477,6 +486,8 @@ def generate_caption_logic(image_file=None, context=""):
         try:
             print("Processing image locally for caption...")
             # Convert bytes to PIL Image
+            from PIL import Image
+
             raw_image = Image.open(io.BytesIO(image_file)).convert('RGB')
             
             # Prepare inputs
@@ -580,9 +591,7 @@ def fetch_trending_news_logic(topic="technology", search_query=None, interests=N
     Fetches news using NewsAPI.ai (Event Registry) via POST.
     Supports: Topic Category, Keyword Search, Personal Interests.
     """
-    from django.conf import settings
-    import os
-    API_KEY = getattr(settings, 'NEWS_API_KEY', None) or os.environ.get('NEWS_API_KEY', '')
+    API_KEY = "eee0368e-febc-47c7-a867-7a22417e2414"
     URL = "https://newsapi.ai/api/v1/article/getArticles"
     
     # Base Query structure (always filter for English)

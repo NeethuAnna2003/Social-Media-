@@ -1,15 +1,25 @@
 Django==5.2.9
 djangorestframework
+djangorestframework-simplejwt
 django-cors-headers
 channels
 django-apscheduler
 
 dj-database-url
-psycopg2-binary
+psycopg[binary]
 python-dotenv
 whitenoise
+requests
+beautifulsoup4
+pillow
 
 gunicorn
 daphne
 channels-redis
-openai-whisper
+google-generativeai
+celery
+redis
+opencv-python-headless
+SpeechRecognition
+pydub
+numpy

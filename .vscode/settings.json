@@ -1,0 +1,15 @@
+{
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "name": "Connectify Local MySQL",
+      "driver": "MySQL",
+      "server": "localhost",
+      "port": 3306,
+      "database": "connectify_db",
+      "username": "root",
+      "password": "root",
+      "previewLimit": 200
+    }
+  ]
+}

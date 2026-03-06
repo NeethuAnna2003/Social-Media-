@@ -42,9 +42,15 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key-for-dev-only')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', ['testserver', 'localhost', '127.0.0.1'])
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', ['testserver', 'localhost', '127.0.0.1']) + [
+    "social-media-2-4cmg.onrender.com",
+    ".onrender.com"
+]
 
-CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', [])
+CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', []) + [
+    "https://social-media-orpin-one.vercel.app",
+    "https://social-media-2-4cmg.onrender.com",
+]
 
 
 # Application definition
@@ -98,10 +104,10 @@ if REDIS_URL:
     }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # MUST be first — before SecurityMiddleware and WhiteNoise
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # CORS middleware should be as high as possible
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -154,7 +160,7 @@ else:
             'USER': os.getenv('DB_USER', 'root'),
             'PASSWORD': os.getenv('DB_PASSWORD', 'root'),
             'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '3306'),
+            'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
 
@@ -187,16 +193,16 @@ AUTHENTICATION_BACKENDS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False') == 'True'
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS', [])
-if DEBUG and not CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS = [
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-    ]
+CORS_ALLOW_ALL_HEADERS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://social-media-orpin-one.vercel.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
 # REST Framework settings
 REST_FRAMEWORK = {
