@@ -193,11 +193,11 @@ AUTHENTICATION_BACKENDS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False') == 'True'
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_HEADERS = True
 
-# Add Vercel domain to existing allowed origins from environment
+# Also keep the Vercel domain in allowed origins just in case older django-cors-headers behaves differently
 env_origins = env_list('CORS_ALLOWED_ORIGINS', [])
 CORS_ALLOWED_ORIGINS = env_origins + [
     "https://social-media-orpin-one.vercel.app",
