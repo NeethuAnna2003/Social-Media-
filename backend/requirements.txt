@@ -17,3 +17,5 @@ gunicorn
 daphne
 channels-redis
 google-generativeai
+celery
+redis
