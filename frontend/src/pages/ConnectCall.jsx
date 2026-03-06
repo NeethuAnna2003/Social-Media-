@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import api from '../api/axios';
+import { WS_BASE } from '../config/env';
 
 const ConnectCall = () => {
     const { userId } = useParams(); // Target User ID
@@ -53,7 +55,7 @@ const ConnectCall = () => {
             const roomId = `connect_${ids[0]}_${ids[1]}`;
 
             // Assuming simplified auth/no token in WS url for prototype, or handle in backend 
-            ws.current = new WebSocket(`ws://${window.location.host}/ws/signal/${roomId}/`);
+            ws.current = new WebSocket(`${WS_BASE}/ws/signal/${roomId}/`);
 
             ws.current.onopen = () => {
                 console.log("WS Connected");

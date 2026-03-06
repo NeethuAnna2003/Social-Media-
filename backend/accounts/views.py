@@ -10,6 +10,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.mail import send_mail
 from django.conf import settings
+import os
 from .serializers import (
     RegisterSerializer, UserSerializer, UserUpdateSerializer, PublicProfileSerializer,
     PasswordResetSerializer, SetNewPasswordSerializer
@@ -169,7 +170,8 @@ class PasswordResetView(APIView):
 
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_link = f"http://localhost:5173/reset-password/{uid}/{token}/"
+            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
+            reset_link = f"{frontend_url}/reset-password/{uid}/{token}/"
             
             # FORCE PRINT for development visibility
             print(f"\n=======================================================")
