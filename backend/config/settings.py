@@ -104,10 +104,10 @@ if REDIS_URL:
     }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # MUST be first — before SecurityMiddleware and WhiteNoise
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # CORS middleware should be as high as possible
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -194,21 +194,15 @@ AUTHENTICATION_BACKENDS = [
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = False  # Disable to allow wildcard origins to work universally
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_HEADERS = True
-
-# Add Vercel domain to existing allowed origins from environment
-env_origins = env_list('CORS_ALLOWED_ORIGINS', [])
-allowed_list = env_origins + [
+CORS_ALLOWED_ORIGINS = [
     "https://social-media-orpin-one.vercel.app",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
-CORS_ALLOWED_ORIGINS = allowed_list
-CORS_ORIGIN_WHITELIST = allowed_list
 
 # REST Framework settings
 REST_FRAMEWORK = {
