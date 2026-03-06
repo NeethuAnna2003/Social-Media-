@@ -10,9 +10,22 @@ from pathlib import Path
 from typing import List, Tuple, Optional
 from django.conf import settings
 from django.core.files.base import ContentFile
-from pydub import AudioSegment
-import speech_recognition as sr
 import logging
+
+# Optional audio processing libraries — graceful fallback if missing
+try:
+    from pydub import AudioSegment
+    PYDUB_AVAILABLE = True
+except ImportError:
+    AudioSegment = None
+    PYDUB_AVAILABLE = False
+
+try:
+    import speech_recognition as sr
+    SR_AVAILABLE = True
+except ImportError:
+    sr = None
+    SR_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
