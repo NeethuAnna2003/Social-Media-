@@ -44,7 +44,10 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', ['testserver', 'localhost', '127.0.0.1'])
 
-CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', [])
+CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', []) + [
+    "https://social-media-orpin-one.vercel.app",
+    "https://social-media-2-4cmg.onrender.com",
+]
 
 
 # Application definition
@@ -189,14 +192,17 @@ AUTHENTICATION_BACKENDS = [
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False') == 'True'
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS', [])
-if DEBUG and not CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS = [
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-    ]
+CORS_ALLOW_ALL_HEADERS = True
+
+# Add Vercel domain to existing allowed origins from environment
+env_origins = env_list('CORS_ALLOWED_ORIGINS', [])
+CORS_ALLOWED_ORIGINS = env_origins + [
+    "https://social-media-orpin-one.vercel.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
 # REST Framework settings
 REST_FRAMEWORK = {
