@@ -16,4 +16,4 @@ pillow
 gunicorn
 daphne
 channels-redis
-openai-whisper
+google-generativeai
