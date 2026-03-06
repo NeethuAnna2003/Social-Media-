@@ -194,18 +194,21 @@ AUTHENTICATION_BACKENDS = [
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = False  # Disable to allow wildcard origins to work universally
 CORS_ALLOW_ALL_HEADERS = True
 
-# Also keep the Vercel domain in allowed origins just in case older django-cors-headers behaves differently
+# Add Vercel domain to existing allowed origins from environment
 env_origins = env_list('CORS_ALLOWED_ORIGINS', [])
-CORS_ALLOWED_ORIGINS = env_origins + [
+allowed_list = env_origins + [
     "https://social-media-orpin-one.vercel.app",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+CORS_ALLOWED_ORIGINS = allowed_list
+CORS_ORIGIN_WHITELIST = allowed_list
 
 # REST Framework settings
 REST_FRAMEWORK = {
