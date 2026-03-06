@@ -19,3 +19,7 @@ channels-redis
 google-generativeai
 celery
 redis
+opencv-python-headless
+SpeechRecognition
+pydub
+numpy
