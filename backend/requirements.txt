@@ -18,8 +18,6 @@ redis==7.1.0
 # Database
 psycopg2-binary==2.9.9
 dj-database-url==2.3.0
-mysqlclient==2.2.7
-PyMySQL==1.1.2
 
 # API integrations and scraping used by app modules
 requests==2.32.5
